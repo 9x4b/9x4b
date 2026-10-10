@@ -13,12 +13,12 @@
     --glow: #cfeff0;
     --glow-soft: rgba(160, 225, 230, .55);
     --line: rgba(255, 255, 255, .09);
+    --cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M12 4v16M4 12h16' stroke='%23cfeff0' stroke-width='2' stroke-linecap='round' filter='drop-shadow(0 0 2px %23a0e1e6)'/%3E%3C/svg%3E") 12 12, crosshair;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html { min-height: 100%; }
+  * { box-sizing: border-box; margin: 0; padding: 0; cursor: var(--cursor); }
   body {
-    min-height: 100vh; min-height: 100dvh;
-    font-family: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    min-height: 100dvh;
+    font-family: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
     color: var(--glow);
     background: #05090b;
     display: grid;
@@ -26,58 +26,48 @@
     padding: 20px;
     overflow-x: hidden;
   }
-  /* soft moving green/teal haze (shows if the video can't load) */
-  .bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
-  .bg i {
-    position: absolute; border-radius: 50%; filter: blur(90px); opacity: .45;
-    animation: drift 18s ease-in-out infinite alternate;
-  }
-  .bg i:nth-child(1) { width: 420px; height: 420px; background: #0f3a38; top: -120px; left: -80px; }
-  .bg i:nth-child(2) { width: 380px; height: 380px; background: #123a2a; bottom: -140px; right: -60px; animation-delay: -6s; }
-  .bg i:nth-child(3) { width: 300px; height: 300px; background: #0e2a40; top: 40%; left: 55%; animation-delay: -11s; }
-  @keyframes drift { to { transform: translate(50px, 40px) scale(1.15); } }
+  a, a * { cursor: var(--cursor); }
 
-  /* background video */
-  #bgv {
-    position: fixed; inset: 0; z-index: 0;
-    width: 100%; height: 100%; object-fit: cover;
-    background: transparent;
+  /* background video + tint + grain */
+  #bgv, .tint, .grain { position: fixed; inset: 0; z-index: 0; }
+  #bgv { width: 100%; height: 100%; object-fit: cover; }
+  .tint { background: rgba(0, 0, 0, .28); pointer-events: none; }
+  .grain {
+    z-index: 1; pointer-events: none; opacity: .07;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
-  .tint { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: rgba(0,0,0,.28); }
 
-  /* "click to enter" screen: needed so the browser lets the video play with sound */
+  /* click-to-enter gate */
   #enter {
     position: fixed; inset: 0; z-index: 10;
     display: grid; place-items: center;
     background: rgba(3, 7, 9, .72);
     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    cursor: pointer; user-select: none;
     transition: opacity .7s ease, visibility .7s ease;
   }
   #enter.gone { opacity: 0; visibility: hidden; }
   #enter span {
     font-size: 1.15rem; letter-spacing: .08em;
-    text-shadow: 0 0 10px var(--glow-soft), 0 0 28px rgba(140,215,220,.4);
+    text-shadow: 0 0 10px var(--glow-soft), 0 0 28px rgba(140, 215, 220, .4);
     animation: pulse 2.4s ease-in-out infinite;
   }
   @keyframes pulse { 50% { opacity: .45; } }
 
-  .grain {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: .07;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  }
-
-  /* ---------- the wide card ---------- */
+  /* profile card with soft glow */
   main {
     position: relative; z-index: 2;
     width: min(760px, 100%);
     padding: 34px 30px 24px;
-    background: linear-gradient(180deg, rgba(10,16,19,.24), rgba(10,16,19,.07));
-    border: 1px solid rgba(255,255,255,.1);
+    background: linear-gradient(180deg, rgba(10, 16, 19, .3), rgba(10, 16, 19, .1));
+    border: 1px solid rgba(255, 255, 255, .1);
     border-radius: 22px;
-    backdrop-filter: blur(7px);
-    -webkit-backdrop-filter: blur(7px);
-    animation: rise .9s cubic-bezier(.2,.8,.2,1) both;
+    backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+    box-shadow: 0 0 24px rgba(150, 220, 225, .18), 0 0 60px rgba(120, 200, 210, .08), inset 0 0 18px rgba(150, 220, 225, .05);
+    transition: box-shadow .3s ease;
+    animation: rise .9s cubic-bezier(.2, .8, .2, 1) both;
+  }
+  main:hover {
+    box-shadow: 0 0 32px rgba(150, 220, 225, .28), 0 0 80px rgba(120, 200, 210, .14), inset 0 0 18px rgba(150, 220, 225, .07);
   }
   @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
 
@@ -85,25 +75,25 @@
   .avatar {
     width: 126px; height: 126px; flex: none; border-radius: 50%;
     object-fit: cover; background: #0b1215;
-    border: 2px solid rgba(255,255,255,.08);
+    border: 2px solid rgba(255, 255, 255, .08);
     box-shadow: 0 0 30px rgba(150, 220, 225, .18);
   }
   h1 {
-    font-size: 2.4rem; font-weight: 700; letter-spacing: .01em; line-height: 1.1;
+    font-size: 2.4rem; font-weight: 700; line-height: 1.1;
     text-shadow: 0 0 10px var(--glow-soft), 0 0 28px rgba(140, 215, 220, .35);
   }
   .bio {
     margin-top: 10px; font-size: 1rem; font-weight: 500; min-height: 1.4em;
-    text-shadow: 0 0 10px rgba(160,225,230,.25);
+    text-shadow: 0 0 10px rgba(160, 225, 230, .25);
   }
   .caret {
     display: inline-block; width: 2px; height: 1.05em; margin-left: 2px;
-    vertical-align: -0.15em; background: var(--glow);
+    vertical-align: -.15em; background: var(--glow);
     animation: blink 1s steps(1) infinite;
   }
   @keyframes blink { 50% { opacity: 0; } }
 
-  /* ---------- the two server boxes ---------- */
+  /* server boxes */
   .servers { margin-top: 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .server {
     display: flex; align-items: center; gap: 14px;
@@ -113,21 +103,19 @@
     border-radius: 18px;
     transition: transform .18s ease, border-color .18s ease;
   }
-  .server:hover { transform: translateY(-2px); border-color: rgba(255,255,255,.18); }
+  .server:hover { transform: translateY(-2px); border-color: rgba(255, 255, 255, .18); }
   .server .icon {
     width: 62px; height: 62px; flex: none; border-radius: 16px; object-fit: cover;
     background: #141d21; display: grid; place-items: center;
-    font-size: 1.5rem; font-weight: 700; color: var(--glow);
+    font-size: 1.5rem; font-weight: 700;
   }
   .server .info { min-width: 0; }
-  .server .sname { font-weight: 700; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .server .meta {
-    margin-top: 5px; font-size: .74rem; color: rgba(207,239,240,.6);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .server .meta .d { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
-  .server .meta .on { background: #3ba55d; }
-  .server .meta .off { background: #8a9499; margin-left: 8px; }
+  .sname, .meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sname { font-weight: 700; font-size: 1.05rem; }
+  .meta { margin-top: 5px; font-size: .74rem; color: rgba(207, 239, 240, .6); }
+  .meta .d { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+  .meta .on { background: #3ba55d; }
+  .meta .off { background: #8a9499; margin-left: 8px; }
   .join {
     display: inline-block; margin-top: 8px;
     padding: 3px 14px; border-radius: 999px;
@@ -137,55 +125,44 @@
   }
   .join:hover { background: #46a362; transform: scale(1.05); }
 
-  /* ---------- footer: views (left) + icons (center) ---------- */
+  /* footer */
   .foot {
     margin-top: 26px;
     display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px;
   }
-  .links { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .links { display: flex; justify-content: center; gap: 12px; }
   .links a {
+    position: relative;
     width: 46px; height: 46px; display: grid; place-items: center;
-    color: var(--glow);
-    border-radius: 14px;
+    color: var(--glow); border-radius: 14px;
+    filter: drop-shadow(0 0 8px rgba(160, 225, 230, .55));
     transition: transform .18s ease, background .18s ease;
-    filter: drop-shadow(0 0 8px rgba(160,225,230,.55));
   }
-  .links a:hover { transform: translateY(-3px) scale(1.08); background: rgba(255,255,255,.05); }
+  .links a:hover { transform: translateY(-3px) scale(1.08); background: rgba(255, 255, 255, .05); }
   .links a::after {
     content: attr(data-tooltip);
-    position: absolute;
-    left: 50%;
-    bottom: calc(100% + 10px);
+    position: absolute; left: 50%; bottom: calc(100% + 10px);
     transform: translate(-50%, 4px);
     padding: 7px 10px;
-    border: 1px solid rgba(207,239,240,.16);
-    border-radius: 8px;
-    background: rgba(5,9,11,.92);
-    color: var(--glow);
-    font: 500 .72rem/1.2 "JetBrains Mono", monospace;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
+    border: 1px solid rgba(207, 239, 240, .16); border-radius: 8px;
+    background: rgba(5, 9, 11, .92); color: var(--glow);
+    font: 500 .72rem/1.2 "JetBrains Mono", monospace; white-space: nowrap;
+    opacity: 0; visibility: hidden; pointer-events: none;
     transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
-    z-index: 5;
   }
-  .links a { position: relative; }
   .links a:hover::after, .links a:focus-visible::after {
-    opacity: 1;
-    visibility: visible;
-    transform: translate(-50%, 0);
+    opacity: 1; visibility: visible; transform: translate(-50%, 0);
   }
   .links svg { width: 30px; height: 30px; fill: currentColor; }
-  .links .axiom-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 6px; }
+  .axiom-logo { width: 30px; height: 30px; object-fit: contain; border-radius: 6px; }
 
   .views {
     display: inline-flex; align-items: center; gap: 8px; justify-self: start;
-    font-size: .95rem; color: rgba(207,239,240,.8);
+    font-size: .95rem; color: rgba(207, 239, 240, .8);
   }
   .views svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-  /* ---------- phones ---------- */
+  /* phones */
   @media (max-width: 640px) {
     main { padding: 26px 18px 20px; }
     .top { flex-direction: column; text-align: center; gap: 14px; }
@@ -198,17 +175,14 @@
 </style>
 </head>
 <body>
-<div class="bg"><i></i><i></i><i></i></div>
 <video id="bgv" autoplay muted loop playsinline preload="auto"></video>
 <div class="tint"></div>
 <div class="grain"></div>
-
 <div id="enter"><span>click to enter</span></div>
 
 <main>
   <header class="top">
-    <!-- Put your picture next to this file as avatar.jpg (or change the src). Falls back to a placeholder. -->
-    <img class="avatar" id="avatar" src="avatar.jpg" alt="9x4b"
+    <img class="avatar" src="avatar.jpg" alt="9x4b"
          onerror="this.onerror=null;this.src=fallback(126)">
     <div>
       <h1>9x4b</h1>
@@ -216,117 +190,78 @@
     </div>
   </header>
 
-  <!-- the server boxes are built from the SERVERS list in the script -->
   <section class="servers" id="servers"></section>
 
   <div class="foot">
     <div class="views" title="Total views">
-      <svg viewBox="0 0 24 24"><path d="M2 12s3.600-7 10-7 10 7 10 7-3.600 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
       <span id="count">0</span>
-    </div>
-
-    <nav class="links">
-      <a href="https://discord.com/users/1235531970839187547"
-         aria-label="Discord" data-tooltip="Discord: 9x4b"
-         target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M19.300 5.400A17 17 0 0 0 15.100 4l-.5 1a15.800 15.800 0 0 0-5.200 0l-.5-1a17 17 0 0 0-4.200 1.400C1.900 9.400 1.200 13.300 1.500 17.100a17 17 0 0 0 5.200 2.600l1.100-1.800c-.6-.2-1.200-.5-1.700-.9l.4-.3a12 12 0 0 0 10.600 0l.4.300c-.5.400-1.100.700-1.700.9l1.100 1.800a17 17 0 0 0 5.200-2.600c.4-4.400-.7-8.300-3.200-11.700zM8.700 14.800c-1 0-1.800-.9-1.800-2s.8-2 1.800-2 1.800.9 1.800 2-.8 2-1.800 2zm6.600 0c-1 0-1.800-.9-1.800-2s.8-2 1.800-2 1.800.9 1.800 2-.8 2-1.800 2z"/></svg>
-      </a>
-      <a href="https://axiom.trade/@9x4b"
-         aria-label="Axiom" data-tooltip="Start trading today"
-         target="_blank" rel="noopener">
-        <img src="https://axiom.trade/favicon.ico?1c1250493c29afa9"
-             alt="" class="axiom-logo">
-      </a>
-    </nav>
-
-    <div></div>
+    </div
+          <div></div>
   </div>
 </main>
 
 <script>
-  // >>> VIDEO LINK (direct link to an .mp4). If it fails, the page falls back to background.mp4 in the same folder. <<<
   const VIDEO_URL = "https://r2.guns.lol/c045de5a-83ae-40c1-b2a2-53aa0d438dfb.mp4";
-
-  // >>> BIO TEXT: one line types once; several lines type, delete, and loop <<<
-  const BIO_LINES = ["your bio goes here"];
-
-  // >>> YOUR DISCORD SERVERS: paste each invite link (discord.gg/xxxx). <<<
-  // name/desc are used until (or unless) Discord's live info loads. Add `icon: "icon1.png"` to use your own image.
+  const BIO_TEXT = "your bio goes here";
   const SERVERS = [
     { name: "Server One", desc: "edit me", invite: "https://discord.gg/YOURCODE1" },
     { name: "Server Two", desc: "edit me", invite: "https://discord.gg/YOURCODE2" },
   ];
 
-  // Placeholder avatar (first letter of the name) if avatar.jpg is missing
   function fallback(size) {
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'>
-      <rect width='100%' height='100%' fill='#0f1a1e'/>
-      <text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle'
-        font-family='sans-serif' font-size='${size * .45}' fill='#cfeff0'>9</text></svg>`;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}'><rect width='100%' height='100%' fill='#0f1a1e'/><text x='50%' y='54%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='${size * .45}' fill='#cfeff0'>9</text></svg>`;
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
   }
 
-  // Typewriter bio
+  // Typewriter bio (types once)
   (() => {
     const el = document.getElementById("typed");
-    const lines = BIO_LINES;
-    if (lines.length === 1) {            // single line: type it once and stop
-      let i = 0;
-      const t = setInterval(() => {
-        el.textContent = lines[0].slice(0, ++i);
-        if (i >= lines[0].length) clearInterval(t);
-      }, 70);
-      return;
-    }
-    let li = 0, ci = 0, del = false;
-    (function tick() {
-      const line = lines[li];
-      el.textContent = line.slice(0, ci);
-      let wait = del ? 35 : 75;
-      if (!del && ci === line.length) { del = true; wait = 1400; }
-      else if (del && ci === 0) { del = false; li = (li + 1) % lines.length; wait = 350; }
-      else ci += del ? -1 : 1;
-      setTimeout(tick, wait);
-    })();
+    let i = 0;
+    const t = setInterval(() => {
+      el.textContent = BIO_TEXT.slice(0, ++i);
+      if (i >= BIO_TEXT.length) clearInterval(t);
+    }, 70);
   })();
 
-  // Server boxes (with live online/member counts from Discord's public invite info when available)
+  // Server boxes with live Discord invite info when available
   (() => {
     const wrap = document.getElementById("servers");
     SERVERS.forEach(async (s) => {
       const card = document.createElement("div");
       card.className = "server";
 
-      const icon = document.createElement(s.icon ? "img" : "div");
+      const icon = document.createElement("div");
       icon.className = "icon";
-      if (s.icon) icon.src = s.icon; else icon.textContent = (s.name || "?").charAt(0).toUpperCase();
+      icon.textContent = (s.name || "?").charAt(0).toUpperCase();
 
       const info = document.createElement("div");
       info.className = "info";
-      const name = document.createElement("div"); name.className = "sname"; name.textContent = s.name;
-      const meta = document.createElement("div"); meta.className = "meta"; meta.textContent = s.desc || "";
-      const join = document.createElement("a");
-      join.className = "join"; join.textContent = "Join";
-      join.href = s.invite; join.target = "_blank"; join.rel = "noopener";
+      const name = Object.assign(document.createElement("div"), { className: "sname", textContent: s.name });
+      const meta = Object.assign(document.createElement("div"), { className: "meta", textContent: s.desc || "" });
+      const join = Object.assign(document.createElement("a"), {
+        className: "join", textContent: "Join", href: s.invite, target: "_blank", rel: "noopener"
+      });
 
       info.append(name, meta, join);
       card.append(icon, info);
       wrap.append(card);
 
-      // live info (silently skipped if the invite code is still a placeholder or the request fails)
       const code = (s.invite || "").split("/").filter(Boolean).pop();
       if (!code || code.startsWith("YOURCODE")) return;
+
       try {
-        const r = await fetch("https://discord.com/api/v9/invites/" + encodeURIComponent(code) + "?with_counts=true");
+        const r = await fetch(`https://discord.com/api/v9/invites/${encodeURIComponent(code)}?with_counts=true`);
         if (!r.ok) return;
         const d = await r.json();
         if (d.guild) {
           name.textContent = d.guild.name || s.name;
-          if (!s.icon && d.guild.icon) {
-            const img = document.createElement("img");
-            img.className = "icon";
-            img.src = `https://cdn.discordapp.com/icons/${d.guild.id}/${d.guild.icon}.png?size=128`;
-            img.onerror = () => img.replaceWith(icon);
+          if (d.guild.icon) {
+            const img = Object.assign(document.createElement("img"), {
+              className: "icon",
+              src: `https://cdn.discordapp.com/icons/${d.guild.id}/${d.guild.icon}.png?size=128`,
+              onerror() { this.replaceWith(icon); }
+            });
             icon.replaceWith(img);
           }
         }
@@ -334,36 +269,38 @@
           const f = (n) => Number(n).toLocaleString();
           meta.innerHTML = `<span class="d on"></span>${f(d.approximate_presence_count)} Online<span class="d off"></span>${f(d.approximate_member_count)} Members`;
         }
-      } catch (e) { /* keep the manual name/desc */ }
+      } catch (e) { /* keep manual name/desc */ }
     });
   })();
 
-  // Click to enter: browsers block sound until the visitor interacts, so unmute on click
+  // Video: try the link, fall back to local background.mp4; unmute on click
   (() => {
     const v = document.getElementById("bgv");
-    // Try the link first; if it fails to load (blocked, expired), fall back to background.mp4 in the same folder
+    const gate = document.getElementById("enter");
     let triedLocal = false;
+
     v.addEventListener("error", () => {
       if (triedLocal) return;
       triedLocal = true;
       v.src = "background.mp4";
       v.play().catch(() => {});
     });
-    v.src = (VIDEO_URL && !VIDEO_URL.startsWith("PASTE_")) ? VIDEO_URL : "background.mp4";
-    const gate = document.getElementById("enter");
-    v.play().catch(() => {});            // muted autoplay behind the blur
-    const go = () => {
+
+    v.src = VIDEO_URL || "background.mp4";
+    v.play().catch(() => {});
+
+    const enter = () => {
       v.muted = false;
-      v.volume = 0.6;                    // change 0.6 to 1 for full volume
+      v.volume = 0.6;
       v.play().catch(() => {});
       gate.classList.add("gone");
     };
-    gate.addEventListener("click", go);
-    gate.addEventListener("touchend", go);
-    window.addEventListener("keydown", (e) => { if (!gate.classList.contains("gone")) go(); });
+    gate.addEventListener("click", enter);
+    gate.addEventListener("touchend", enter);
+    window.addEventListener("keydown", () => { if (!gate.classList.contains("gone")) enter(); });
   })();
 
-  // View counter: counts once per browser session, always shows the saved total
+  // View counter: counts once per session, always shows the saved total
   (async () => {
     const el = document.getElementById("count");
     let counted = false;
@@ -373,7 +310,7 @@
       const d = await r.json();
       el.textContent = Number(d.views).toLocaleString();
       try { sessionStorage.setItem("viewed", "1"); } catch (e) {}
-    } catch (e) { /* function not deployed yet: leave it at 0 */ }
+    } catch (e) { /* endpoint not deployed yet */ }
   })();
 </script>
 </body>
