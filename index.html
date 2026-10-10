@@ -254,7 +254,7 @@
   // name/desc are used until (or unless) Discord's live info loads. Add `icon: "icon1.png"` to use your own image.
   const SERVERS = [
     { name: "Server One", desc: "edit me", invite: "https://discord.gg/YOURCODE1" },
-    { name: "Make Money", desc: "Make money from inviting!!", invite: "https://discord.gg/pYzyAQDD2" },
+    { name: "Get paid to invite!", desc: "Make money from inviting", invite: "https://discord.gg/pYzyAQDD2" },
   ];
 
   // Placeholder avatar (first letter of the name) if avatar.jpg is missing
@@ -303,7 +303,7 @@
 
       const info = document.createElement("div");
       info.className = "info";
-      const name = document.createElement("div"); name.className = "sname"; name.textContent = s.name;
+    //  const name = document.createElement("div"); name.className = "sname"; name.textContent = s.name;
       const meta = document.createElement("div"); meta.className = "meta"; meta.textContent = s.desc || "";
       const join = document.createElement("a");
       join.className = "join"; join.textContent = "Join";
