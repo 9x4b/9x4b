@@ -291,50 +291,88 @@
   })();
 
   // Server boxes (with live online/member counts from Discord's public invite info when available)
+  
+  // Server boxes (custom names + descriptions + member counts, no online count)
   (() => {
     const wrap = document.getElementById("servers");
+
     SERVERS.forEach(async (s) => {
       const card = document.createElement("div");
       card.className = "server";
 
       const icon = document.createElement(s.icon ? "img" : "div");
       icon.className = "icon";
-      if (s.icon) icon.src = s.icon; else icon.textContent = (s.name || "?").charAt(0).toUpperCase();
+
+      if (s.icon) {
+        icon.src = s.icon;
+      } else {
+        icon.textContent = (s.name || "?").charAt(0).toUpperCase();
+      }
 
       const info = document.createElement("div");
       info.className = "info";
-      const name = document.createElement("div"); name.className = "sname"; name.textContent = "sname";
-      const meta = document.createElement("div"); meta.className = "meta"; meta.textContent = s.desc || "";
-      const join = document.createElement("a");
-      join.className = "join"; join.textContent = "Join";
-      join.href = s.invite; join.target = "_blank"; join.rel = "noopener";
 
-      info.append(name, meta, join);
+      const name = document.createElement("div");
+      name.className = "sname";
+      name.textContent = s.name;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = s.desc || "";
+
+      const members = document.createElement("div");
+      members.className = "meta";
+
+      const join = document.createElement("a");
+      join.className = "join";
+      join.textContent = "Join";
+      join.href = s.invite;
+      join.target = "_blank";
+      join.rel = "noopener";
+
+      info.append(name, meta, members, join);
       card.append(icon, info);
       wrap.append(card);
 
-      // live info (silently skipped if the invite code is still a placeholder or the request fails)
+      // Fetch Discord member count only; keep your custom server name
       const code = (s.invite || "").split("/").filter(Boolean).pop();
-      if (!code || code.startsWith("YOURCODE")) return;
+
+      if (!code || code.startsWith("YOURCODE")) {
+        members.remove();
+        return;
+      }
+
       try {
-        const r = await fetch("https://discord.com/api/v9/invites/" + encodeURIComponent(code) + "?with_counts=true");
-        if (!r.ok) return;
+        const r = await fetch(
+          "https://discord.com/api/v9/invites/" +
+          encodeURIComponent(code) +
+          "?with_counts=true"
+        );
+
+        if (!r.ok) {
+          members.remove();
+          return;
+        }
+
         const d = await r.json();
-        if (d.guild) {
-          name.textContent = d.guild.name || s.name;
-          if (!s.icon && d.guild.icon) {
-            const img = document.createElement("img");
-            img.className = "icon";
-            img.src = `https://cdn.discordapp.com/icons/${d.guild.id}/${d.guild.icon}.png?size=128`;
-            img.onerror = () => img.replaceWith(icon);
-            icon.replaceWith(img);
-          }
+
+        if (d.guild?.icon && !s.icon) {
+          const img = document.createElement("img");
+          img.className = "icon";
+          img.src = `https://cdn.discordapp.com/icons/${d.guild.id}/${d.guild.icon}.png?size=128`;
+          img.onerror = () => img.replaceWith(icon);
+          icon.replaceWith(img);
         }
+
         if (d.approximate_member_count != null) {
-          const f = (n) => Number(n).toLocaleString();
-          meta.innerHTML = `<span class="d on"></span>${f(d.approximate_presence_count)} Online<span class="d off"></span>${f(d.approximate_member_count)} Members`;
+          members.textContent =
+            Number(d.approximate_member_count).toLocaleString() + " Members";
+        } else {
+          members.remove();
         }
-      } catch (e) { /* keep the manual name/desc */ }
+      } catch (e) {
+        members.remove();
+      }
     });
   })();
 
